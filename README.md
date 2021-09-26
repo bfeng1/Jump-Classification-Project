@@ -35,6 +35,9 @@ false negative rate: 0.1830952380952381
 ## Future work
 * The training dataset only contains total 46 jump cycles(25 normal jump/ 12 inner jump/ 9 outer jump). So we need to collect more jump data for better accuracy.
 * Add different classifier models to compare the accuracy
+
+## Credit
+K Nearest Neighbors & Dynamic Time Warping. The source code for the index construction and search is available at https://github.com/markdregan/K-Nearest-Neighbors-with-Dynamic-Time-Warping.
 <!---
 bfeng1/bfeng1 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 You can click the Preview link to take a look at your changes.
