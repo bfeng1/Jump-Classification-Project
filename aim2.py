@@ -28,7 +28,7 @@ class jump:
         self.name = name
         self.jump_cycle = jump_cycle
     def csv2df(self):
-        csv_file = self.name + '.csv'
+        csv_file = 'csv_files/'+self.name + '.csv'
         df = pd.read_csv(csv_file)
         # cleaning the dataset(drop the rows with ratio is higher than 2.25)
         df['left angle ratio'] = df['Angle1']/df['Angle3']
@@ -36,7 +36,7 @@ class jump:
         df.drop(df[df['left angle ratio']<0.75].index, inplace = True)
         df['smoothed'] = savgol_filter(df['left angle ratio'], 25, 2)
         return df
-        
+
     def finetune(self):
         df = jump.csv2df(self)
         jump_cycle = self.jump_cycle
@@ -61,8 +61,8 @@ class jump:
             print('new cycle {}: {}'.format(self.name, new_results))
         elif check is True:
             print('The jump cycle has been finetuned')
-        return new_results    
-   
+        return new_results
+
     def resample_df(self):
         df_list = []
         jump_cycle = self.jump_cycle
@@ -89,7 +89,7 @@ class jump:
             sns.lineplot(data = df_list[i], x = df_list[i].index, y = 'smoothed')
         print('the process is done for the jump {}'.format(self.name))
 
-          
+
 # #%%
 # # create lists to store the names of csv files
 # # create jump cycle(manually select range, then autocorrect by algorithm)
@@ -109,42 +109,42 @@ class jump:
 class KnnDtw(object):
     """K-nearest neighbor classifier using dynamic time warping
     as the distance measure between pairs of time series arrays
-    
+
     Arguments
     ---------
     n_neighbors : int, optional (default = 5)
         Number of neighbors to use by default for KNN
-        
+
     max_warping_window : int, optional (default = infinity)
         Maximum warping window allowed by the DTW dynamic
         programming function
-            
+
     subsample_step : int, optional (default = 1)
         Step size for the timeseries array. By setting subsample_step = 2,
         the timeseries length will be reduced by 50% because every second
         item is skipped. Implemented by x[:, ::subsample_step]
     """
-    
+
     def __init__(self, n_neighbors=5, max_warping_window=10000, subsample_step=1):
         self.n_neighbors = n_neighbors
         self.max_warping_window = max_warping_window
         self.subsample_step = subsample_step
-    
+
     def fit(self, x, l):
         """Fit the model using x as training data and l as class labels
-        
+
         Arguments
         ---------
         x : array of shape [n_samples, n_timepoints]
             Training data set for input into KNN classifer
-            
+
         l : array of shape [n_samples]
             Training labels for input into KNN classifier
         """
-        
+
         self.x = x
         self.l = l
-        
+
     def _dtw_distance(self, ts_a, ts_b, d = lambda x,y: abs(x-y)):
         """Returns the DTW similarity distance between two 2-D
         timeseries numpy arrays.
@@ -155,11 +155,11 @@ class KnnDtw(object):
             Two arrays containing n_samples of timeseries data
             whose DTW distance between each sample of A and B
             will be compared
-        
+
         d : DistanceMetric object (default = abs(x-y))
             the distance measure used for A_i - B_j in the
             DTW dynamic programming function
-        
+
         Returns
         -------
         DTW distance between A and B
@@ -185,91 +185,91 @@ class KnnDtw(object):
                 choices = cost[i - 1, j - 1], cost[i, j-1], cost[i-1, j]
                 cost[i, j] = min(choices) + d(ts_a[i], ts_b[j])
 
-        # Return DTW distance given window 
+        # Return DTW distance given window
         return cost[-1, -1]
-    
+
     def _dist_matrix(self, x, y):
         """Computes the M x N distance matrix between the training
         dataset and testing dataset (y) using the DTW distance measure
-        
+
         Arguments
         ---------
         x : array of shape [n_samples, n_timepoints]
-        
+
         y : array of shape [n_samples, n_timepoints]
-        
+
         Returns
         -------
         Distance matrix between each item of x and y with
             shape [training_n_samples, testing_n_samples]
         """
-        
-        # Compute the distance matrix        
+
+        # Compute the distance matrix
         dm_count = 0
-        
+
         # Compute condensed distance matrix (upper triangle) of pairwise dtw distances
         # when x and y are the same array
         if(np.array_equal(x, y)):
             x_s = np.shape(x)
             dm = np.zeros((x_s[0] * (x_s[0] - 1)) // 2, dtype=np.double)
-        
-            
+
+
             for i in range(0, x_s[0] - 1):
                 for j in range(i + 1, x_s[0]):
                     dm[dm_count] = self._dtw_distance(x[i, ::self.subsample_step],
                                                       y[j, ::self.subsample_step])
-                    
+
                     dm_count += 1
-            
+
             # Convert to squareform
             dm = squareform(dm)
             return dm
-        
+
         # Compute full distance matrix of dtw distnces between x and y
         else:
             x_s = np.shape(x)
             y_s = np.shape(y)
-            dm = np.zeros((x_s[0], y_s[0])) 
-            
+            dm = np.zeros((x_s[0], y_s[0]))
+
             for i in range(0, x_s[0]):
                 for j in range(0, y_s[0]):
                     dm[i, j] = self._dtw_distance(x[i, ::self.subsample_step],
                                                   y[j, ::self.subsample_step])
                     # Update progress bar
                     dm_count += 1
-        
+
             return dm
-        
+
     def predict(self, x):
-        """Predict the class labels or probability estimates for 
+        """Predict the class labels or probability estimates for
         the provided data
 
         Arguments
         ---------
           x : array of shape [n_samples, n_timepoints]
               Array containing the testing data set to be classified
-          
+
         Returns
         -------
           2 arrays representing:
-              (1) the predicted class labels 
+              (1) the predicted class labels
               (2) the knn label count probability
         """
-        
+
         dm = self._dist_matrix(x, self.x)
         # Identify the k nearest neighbors
         knn_idx = dm.argsort()[:, :self.n_neighbors]
 
         # Identify k nearest labels
         knn_labels = self.l[knn_idx]
-        
+
         # Model Label
         mode_data = mode(knn_labels, axis=1)
         mode_label = mode_data[0]
         mode_proba = mode_data[1]/self.n_neighbors
 
         return mode_label.ravel(), mode_proba.ravel()
-    
+
 #%%
 good = ['good1', 'good2','good4','good6']
 inner = ['inner1', 'inner2', 'inner3']
@@ -304,7 +304,7 @@ X = pd.concat(total_x)
 # compare time series signal for good jump and bad (inner+outer) jump
 # load the label file
 
-y = pd.read_csv('lable.csv')
+y = pd.read_csv('csv_files/lable.csv')
 label_encoder = LabelEncoder()
 encoded_labels = label_encoder.fit_transform(y.jump)
 y['label'] = encoded_labels
@@ -318,11 +318,11 @@ sequences = []
 for series_id, group in X.groupby('series_id'):
     sequence_features = group[feature_columns]
     label = y[y.series_id == series_id].iloc[0].label
-    
+
     sequences.append((sequence_features, label))
 
 def create_data(sequences, test_size = 0.2):
-    train_sequences, test_sequences = train_test_split(sequences, test_size = 0.2)        
+    train_sequences, test_sequences = train_test_split(sequences, test_size = 0.2)
     train_X = np.empty(shape = (len(train_sequences),135), dtype = 'object')
     train_y = []
     test_X = np.empty(shape = (len(test_sequences),135), dtype = 'object')
