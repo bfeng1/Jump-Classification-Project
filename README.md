@@ -28,9 +28,9 @@ Manually selected time range for each jump cycle in a multiple-jump-cycles examp
 * Used KNN (K nearest neighbor) with DTW to classify the good and bad jump cycles using "left knee angle ratio" feature.
 
 ## Results
-the accuracy of the classifier: 76.0%
-false positive rate: 0.2926190476190476
-false negative rate: 0.1830952380952381
+* the accuracy of the classifier: 76.0%
+* false positive rate: 0.2926190476190476
+* false negative rate: 0.1830952380952381
 
 ## Future work
 * The training dataset only contains total 46 jump cycles(25 normal jump/ 12 inner jump/ 9 outer jump). So we need to collect more jump data for better accuracy.
