@@ -1,8 +1,8 @@
-- 👋 Hi, I’m Bin Feng
-- 👀 I’m interested in data science, artificial intellegence, machine learning models
-- 🌱 I’m currently learning electrical and computer engineer in university of memphis
-- 💞️ I’m looking to collaborate on 3D marker-less gait analysis system
-- 📫 How to reach me: binfengmemphis@gmail.com
+- Hi, I’m Bin Feng
+- I’m interested in data science, artificial intellegence, machine learning models
+- I’m currently learning electrical and computer engineer in university of memphis
+- I’m looking to collaborate on 3D marker-less gait analysis system
+- How to reach me: binfengmemphis@gmail.com
 
 ## Main purpose of this project:
 Use gathed kinematical infomation duing vertical jump to determine if the jump style is good or bad.
